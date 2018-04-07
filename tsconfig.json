@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2016",
+    "alwaysStrict": false,
+    "allowJs": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "types": [
+      // add node as an option
+      "node"
+    ],
+    "typeRoots": [
+      // add path to @types
+      "node_modules/@types"
+    ]
+  },
+  "exclude": ["node_modules", "doc", "ext-doc", "docs", "coverage", "dist"]
+}
