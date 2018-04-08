@@ -8,7 +8,7 @@ const constants = require('./../../components/Constants');
 
 export class UserCtrl{
 
-  createUser = (req) => {
+  createUser(req) {
     const fname = 'UserCtrl.createUser';
     return new Promise((resolve, reject) => {
       try{

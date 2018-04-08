@@ -1,7 +1,7 @@
 import {Connection, Document, Model, Query} from 'mongoose';
+import {ErrorHandler} from "../../components/ErrorHandler";
 
 const constants = require('../../components/Constants');
-const errHandler = require('../../components/ErrorHandler');
 
 export function DbService(db: Connection) {
 
@@ -71,14 +71,14 @@ export function DbService(db: Connection) {
           .then(result => {
             return callback(null, result);
           }, err => {
-            return callback(errHandler.handleErr(null,
+            return callback(ErrorHandler.handleErr(null,
                 `Could not fetch ${modelName.toLowerCase()} model for id: ${modelId}`,
                 constants.errType.DB, 400, err));
           });
     }
 
     return ((query.exec()) as Promise<T>).catch(err => {
-      throw errHandler.handleErrDb(null,
+      throw ErrorHandler.handleErrDb(null,
           `Could not fetch ${modelName.toLowerCase()} model for id: ${modelId}`, err)
     });
   };
@@ -87,7 +87,7 @@ export function DbService(db: Connection) {
                                                               populate?, projection?): Promise<T> {
     const model = await findById<T>(modelName, modelId, lean, populate, projection);
     if (model === null) {
-      throw errHandler.handleErrDb(null,
+      throw ErrorHandler.handleErrDb(null,
           `Could not fetch ${modelName.toLowerCase()} model for id: ${modelId}`);
     }
     return model;
@@ -110,7 +110,7 @@ export function DbService(db: Connection) {
                                                              populate?): Promise<T> {
     const model = await findOne<T>(modelName, conditions, lean, fields, options, populate);
     if (model === null) {
-      throw errHandler.handleErrDb(null,
+      throw ErrorHandler.handleErrDb(null,
           `Could not fetch ${modelName.toLowerCase()} model ${modelName} for condition: ${conditions}`,);
     }
     return model;
@@ -121,7 +121,7 @@ export function DbService(db: Connection) {
     return await Model
         .count(conditions)
         .catch(err => {
-          throw errHandler.handleErrDb('DbService.count', 'Could not count the model.', err);
+          throw ErrorHandler.handleErrDb('DbService.count', 'Could not count the model.', err);
         });
   };
 
@@ -196,14 +196,14 @@ export function DbService(db: Connection) {
             callback(null, result);
             return result
           }, err => {
-            return callback(errHandler.handleErr(null,
+            return callback(ErrorHandler.handleErr(null,
                 `Could not fetch ${modelName.toLowerCase()} models. Query params used:  ${conditions}`,
                 constants.errType.DB, 400, err));
           });
     }
 
     return ((query.exec()) as Promise<T[]>).catch(err => {
-      throw errHandler.handleErrDb(null,
+      throw ErrorHandler.handleErrDb(null,
           `Could not fetch ${modelName.toLowerCase()} models. Query params used: ${conditions}`, err);
     });
   };
@@ -235,7 +235,7 @@ export function DbService(db: Connection) {
     if (typeof callback === 'function') {
       return Model.update(conditions, update, options, function (err) {
         if (err) {
-          err = errHandler.handleErr(null,
+          err = ErrorHandler.handleErr(null,
               `Could not update ${modelName.toLowerCase()} models. Conditions: ` +
               `${conditions} update: ${update} options: ${options}`,
               constants.errType.DB, 400, err);
@@ -246,7 +246,7 @@ export function DbService(db: Connection) {
     }
 
     return Model.update(conditions, update, options).exec().catch(err => {
-      throw errHandler.handleErr(null,
+      throw ErrorHandler.handleErr(null,
           `Could not update ${modelName.toLowerCase()} models. Conditions: ` +
           `${conditions} update: ${update} options: ${options}`,
           constants.errType.DB, 400, err);
@@ -269,7 +269,7 @@ export function DbService(db: Connection) {
     if (typeof callback === 'function') {
       return Model.remove(conditions, function (err) {
         if (err) {
-          err = errHandler.handleErr(null,
+          err = ErrorHandler.handleErr(null,
               `Could not remove ${modelName.toLowerCase()} models. Conditions: ${conditions}`,
               constants.errType.DB, 400, err);
         }
@@ -281,7 +281,7 @@ export function DbService(db: Connection) {
     return Model
         .remove(conditions)
         .catch(err => {
-          throw errHandler.handleErr(null,
+          throw ErrorHandler.handleErr(null,
               `Could not remove ${modelName.toLowerCase()} models. Conditions: ${conditions}`,
               constants.errType.DB, 400, err);
         });
@@ -301,7 +301,7 @@ export function DbService(db: Connection) {
     if (typeof callback == 'function') {
       modelObject.save(function (err, savedObject) {
         if (err) {
-          err = errHandler.handleErrDb('DbService.save', 'Cold not save the model.', err);
+          err = ErrorHandler.handleErrDb('DbService.save', 'Cold not save the model.', err);
         }
         return callback(err, savedObject);
       });
@@ -309,7 +309,7 @@ export function DbService(db: Connection) {
       return modelObject
           .save()
           .catch(err => {
-            throw errHandler.handleErrDb('DbService.save', 'Could not save the model.', err);
+            throw ErrorHandler.handleErrDb('DbService.save', 'Could not save the model.', err);
           });
     }
   };
@@ -358,7 +358,7 @@ export function DbService(db: Connection) {
       return (<any>documents[0].constructor) // model
           .populate(documents, populateObject);
     } catch (err) {
-      throw errHandler.handleErrDb('DbService.fetchModelReference',
+      throw ErrorHandler.handleErrDb('DbService.fetchModelReference',
           'Could not populate the model.', JSON.stringify(err));
     }
   };
@@ -371,7 +371,7 @@ export function DbService(db: Connection) {
     const Model = db.model(modelName);
     return Model.collection.insertMany(documents)
         .catch(err => {
-          throw errHandler.handleErrDb('DbService.insertMany', 'Could not insert many model.', err);
+          throw ErrorHandler.handleErrDb('DbService.insertMany', 'Could not insert many model.', err);
         });
   };
 
@@ -379,7 +379,7 @@ export function DbService(db: Connection) {
     const Model = db.model(modelName);
     return Model.collection.updateMany(filter, update)
         .catch(err => {
-          throw errHandler.handleErrDb('DbService.updateMany', 'Could not update many model.', err);
+          throw ErrorHandler.handleErrDb('DbService.updateMany', 'Could not update many model.', err);
         });
   };
 
@@ -387,7 +387,7 @@ export function DbService(db: Connection) {
     const Model = db.model(modelName);
     return Model.collection.deleteMany(filter)
         .catch(err => {
-          throw errHandler.handleErrDb('DbService.deleteMany', 'Could not delete many model.', err);
+          throw ErrorHandler.handleErrDb('DbService.deleteMany', 'Could not delete many model.', err);
         });
   };
 

@@ -1,12 +1,12 @@
 import {defaultCtrlCall} from './UtilResources';
 import {authorize} from "../Authorization";
+import {UserCtrl} from "../../controllers/user/UserCtrl";
 
-const userCtrl = require('../../controllers/user/UserCtrl');
-
-export function Routes(router) {
+const userCtrl = new UserCtrl();
+export function UserRoutes(router) {
 
   /**
-   * @api {get} /users/auth/register Registers a user
+   * @api {post} /users/auth/register Registers a user
    * @apiDescription Registers user with InitialUser model and empty User model
    * @apiVersion 2.0.0
    * @apiName RegisterUser

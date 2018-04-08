@@ -1,9 +1,10 @@
-const errHandler = require('../../components/ErrorHandler');
-const Config = require('../../components/Config');
+import {ErrorHandler} from "../../components/ErrorHandler";
+import {Config} from "../../components/Config";
 
 export async function defaultCtrlCall(res, method: Function, ...params) {
+  console.log(method);
   try {
-    const data = await method.apply(this, params);
+    const data = await method.apply(null, params);
     if (data) {
       res.send(data);
     } else {
@@ -11,7 +12,7 @@ export async function defaultCtrlCall(res, method: Function, ...params) {
     }
   } catch (err) {
 
-    if (!Config.database.production) {
+    if (!Config.config.database.production) {
       console.error(err);
       if(err.inner) {
         console.error(err.inner);
@@ -21,7 +22,7 @@ export async function defaultCtrlCall(res, method: Function, ...params) {
     if (err.code) {
       res.status(err.code).send({type: err.type, msg: err.msg});
     } else {
-      err = errHandler.handleErrUnknown(method.name, err.message);
+      err = ErrorHandler.handleErrUnknown(method.name, err.message);
       res.sendStatus(err.code);
     }
   }

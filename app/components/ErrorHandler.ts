@@ -63,15 +63,15 @@ export class ErrorHandler {
     logError(errorLogModel);
   };
 
-  static handleErrQueryfunction(functionName, msg, inner) {
+  static handleErrQueryfunction(functionName, msg, inner?) {
     return this.handleErr(functionName, msg, constants.errType.QUERY, 400, inner);
   };
 
-  static handleErrorPrecondition(functionName, msg, inner) {
+  static handleErrorPrecondition(functionName, msg, inner?) {
     return this.handleErr(functionName, msg, constants.errType.PRECONDITION, 400, inner);
   };
 
-  static handleErrDb(functionName, msg, inner) {
+  static handleErrDb(functionName, msg, inner?) {
     return this.handleErr(functionName, msg, constants.errType.DB, 400, inner);
   };
 
@@ -79,15 +79,15 @@ export class ErrorHandler {
     return this.handleErr(functionName, msg, constants.errType.VALIDATION, 404, inner);
   };
 
-  static handleErrRestriction(functionName, msg, inner) {
+  static handleErrRestriction(functionName, msg, inner?) {
     return this.handleErr(functionName, msg, constants.errType.RESTRICTION, 400, inner);
   };
 
-  static handleErrSecurity(functionName, msg, inner) {
+  static handleErrSecurity(functionName, msg, inner?) {
     return this.handleErr(functionName, msg, constants.errType.SECURITY, 403, inner);
   };
 
-  static handleErrUnknown(functionName, msg, inner) {
+  static handleErrUnknown(functionName, msg, inner?) {
     return this.handleErr(functionName, msg, constants.errType.UNKNOWN, 400, inner);
   };
 }
