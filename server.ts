@@ -1,8 +1,8 @@
 import {initializeResources} from './app/communication/resources/Resources';
 import * as Logger from './app/components/logger/Logger';
 
+import {Config} from "./app/components/Config";
 
-const Config = require('./app/components/Config');
 const http = require('http');
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -27,7 +27,7 @@ if (process.argv) {
   args.forEach(function (arg) {
     if (arg === '--local') {
       console.log('-------- Portnis API server will use local database --------');
-
+      Config.setLocal();
     } else if (arg === '--test' && !Config.config.database.production) {
       console.log('-------- Portnis API server will run in test mode --------');
       Config.setTest();

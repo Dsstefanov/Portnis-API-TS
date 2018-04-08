@@ -29,7 +29,7 @@ export class Config {
       },
       'productiondb': {
         'uri': 'localhost:27016',
-        'port': 27017,
+        'port': 27016,
         'logPath': '/dbs/production/mongodb.log'
       }
     },
@@ -70,5 +70,3 @@ export class Config {
     this.config.testMode = true;
   }
 }
-
-module.exports = Config;

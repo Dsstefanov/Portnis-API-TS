@@ -1,5 +1,6 @@
 const appPackage = require('../../../../package.json');
 const constants = require('../../components/Constants');
+import {Routes} from "./UserResources"
 
 /**
  * General resource file that should require the other resource files
@@ -12,6 +13,7 @@ export function initializeResources(app, router) {
 
   // Status route used to display API name and version
   router.get('/api', function(req, res) {
+    console.log(appPackage.description + 'test');
     const message = {
       API: appPackage.description,
       version: appPackage.version,
@@ -26,5 +28,5 @@ export function initializeResources(app, router) {
 
   // Require routes related to different models
   //TODO init the routes
-  //require('./UserResources')(router);
+  Routes(router);
 }

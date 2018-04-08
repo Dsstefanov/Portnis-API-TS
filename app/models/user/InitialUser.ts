@@ -1,6 +1,7 @@
 import {Connection, Document, Schema, Types} from 'mongoose';
 import * as validator from 'mongoose-validators';
 import {getConnection} from '../../components/database/DbConnect';
+import {ErrorHandler} from "../../components/ErrorHandler";
 
 const bcrypt = require('bcrypt-nodejs');
 const db = getConnection();
@@ -9,26 +10,26 @@ export class InitialUser {
   email: string;
   password?: string;
   remember_token?: string;
-  userId :string
+  userId: string;
 }
 
 export const InitialUserSchema = new Schema({
-      remember_token: {type: String},
-      password: {type: String, required: true, trim: true, validate: [validator.isLength(8, 128)], select: false},
-      email: {
-        type: String,
-        required: true,
-        unique: true,
-        validate: [validator.isEmail(), validator.isLength(1, 128)]
-      },
-      userId: {type: Schema.Types.ObjectId, ref: 'User'}
-    }, {usePushEach: true});
+  remember_token: {type: String},
+  password: {type: String, required: true, trim: true, validate: [validator.isLength(8, 128)], select: false},
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    validate: [validator.isEmail(), validator.isLength(1, 128)]
+  },
+  userId: {type: Schema.Types.ObjectId, ref: 'User'}
+});
 
 export interface IInitialUser extends InitialUser, Document {
 }
 
 InitialUserSchema.pre('save', function (next) {
-  this.encryptPassword(next);
+  InitialUserSchema.methods.encryptPassword(next);
 });
 
 /**
@@ -55,22 +56,19 @@ InitialUserSchema.methods.encryptPassword = function (next) {
   // 12 rounds seems to give an average response time (authentication) of about 1800 ms
   bcrypt.genSalt(8, function (err, salt) {
     if (err) {
-      logCtrl.createErrorLog('InitialUser.preSave', err);
+      ErrorHandler.createErrorLog('InitialUser.preSave', err);
       return next(err);
     }
 
     // hash the password using our new salt
     bcrypt.hash(user.password, salt, null, function (err, hash) {
       if (err) {
-        logCtrl.createErrorLog('InitialUser.preSave', err);
+        ErrorHandler.createErrorLog('InitialUser.preSave', err);
         return next(err);
       }
 
       // override the cleartext password with the hashed one
       user.password = hash;
-      if (!user.reqNewPass) {
-        user.passwordTime = moment();
-      }
       next();
     });
   });
@@ -90,7 +88,7 @@ InitialUserSchema.methods.comparePassword = async function (candidatePassword: s
         .then((user) => {
           bcrypt.compare(candidatePassword, user.password, function (err, isMatch) {
             if (err) {
-              logCtrl.createErrorLog('UserSchema.comparePassword', err);
+              ErrorHandler.createErrorLog('InitialUserSchema.comparePassword', err);
               return callback(err);
             }
             callback(null, isMatch);

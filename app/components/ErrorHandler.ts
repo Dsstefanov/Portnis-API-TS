@@ -1,8 +1,10 @@
-const db = require('../components/database/DbConnect')();
+import {getConnection} from './database/DbConnect'
+import {Config} from "./Config";
+const config = Config.config;
 const moment = require('moment');
-const config = require('../components/Config');
 const constants = require('../components/Constants');
-import {logError} from '../components/logger/Logger';
+const db = getConnection();
+import {logError} from './logger/Logger';
 
 export class ErrorHandler {
   /**
@@ -18,7 +20,7 @@ export class ErrorHandler {
    * @param {String} [inner] Inner exception/error, will be printed out separately
    * @returns {{msg: *, type: *, code: *}} Object containing the error message, type and code
    */
-  static handleErr(functionName, msg, type, code, inner) {
+  static handleErr(functionName, msg, type, code, inner?) {
     if (functionName && !config.testMode) {
       this.createErrorLog(functionName, `${type} ${msg}`);
       if (inner) {
@@ -47,11 +49,11 @@ export class ErrorHandler {
     console.log(`${moment().format()} - ERROR: ${functionName} - ${message}`);
 
     const ErrorLog = db.model('ErrorLog');
-    const errorLogModel = new ErrorLog;
-
-    errorLogModel.functionName = functionName;
+    const errorLogModel = new ErrorLog();
+    /*TODO FIX MODEL SETTERS TO WORK*/
+    /*errorLogModel.functionName = functionName;
     errorLogModel.message = message;
-    errorLogModel.timeStamp = moment();
+    errorLogModel.timeStamp = moment();*/
     errorLogModel.save(function (err) {
       if (err) {
         console.log('Error saving ErrorLog! WTF?');

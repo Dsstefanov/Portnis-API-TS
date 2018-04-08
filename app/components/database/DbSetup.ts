@@ -1,4 +1,5 @@
-const Config = require('./../Config');
+import {Config} from "../Config";
+import {getConnection} from "./DbConnect";
 const exec = require('child-process-promise').exec;
 const spawn = require('child_process').spawn;
 const os = require('os');
@@ -12,7 +13,6 @@ const path = require('path');
  * (not when connection is established)
  */
 module.exports = function() {
-
   if (Config.config.database.production) {
     return Promise.resolve();
   }
@@ -143,7 +143,7 @@ module.exports = function() {
   function initializeMasterDb(dbPort) {
     const requireFiles = function() {
       //Setup database with required models
-      require('./DbConnect')();
+      getConnection();
     };
 
     if (!dbPort) {
