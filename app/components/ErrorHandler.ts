@@ -45,15 +45,12 @@ export class ErrorHandler {
    * @param {String} functionName the function in question which results in an error
    * @param {String} message the error log message
    */
-  static createErrorLog(functionName, message) {
+  static async createErrorLog(functionName, message) {
     console.log(`${moment().format()} - ERROR: ${functionName} - ${message}`);
 
     const ErrorLog = db.model('ErrorLog');
-    const errorLogModel = new ErrorLog();
-    /*TODO FIX MODEL SETTERS TO WORK*/
-    /*errorLogModel.functionName = functionName;
-    errorLogModel.message = message;
-    errorLogModel.timeStamp = moment();*/
+    const errorLogModel = await ErrorLog.create({functionName: functionName,
+    message: message, timeStamp: moment()});
     errorLogModel.save(function (err) {
       if (err) {
         console.log('Error saving ErrorLog! WTF?');

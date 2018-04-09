@@ -1,29 +1,35 @@
 import {defaultCtrlCall} from "../../communication/resources/UtilResources";
 import {getConnection} from "../../components/database/DbConnect";
 import {DbService} from "../../services/general/DbService";
-const dbService = DbService(getConnection());
 import {ErrorHandler} from "../../components/ErrorHandler";
 const constants = require('./../../components/Constants');
+const dbService = DbService(getConnection());
 
 
 export class UserCtrl{
 
   createUser(req) {
     const fname = 'UserCtrl.createUser';
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       try{
-        let reqUser = req.body;
-        const InitialUser = dbService.getModel('InitialUser');
-        let initialUser = new InitialUser();
-        /*TODO FIX MODEL SETTERS*/
-        /*initialUser.valid = false;
-        initialUser.email = reqUser.email;
-        initialUser.password = reqUser.password;*/
-        dbService.save(initialUser);
-        resolve(initialUser);
+        const InitialUser :any = dbService.getModel('InitialUser');
+        const User :any = dbService.getModel('User');
+        let initialUser = await InitialUser.create(InitialUser.toModelObject(req, dbService));
+        let user;
+        try{
+          user = new User();
+          initialUser.userId = user._id;
+          user.save();
+          initialUser.save();
+          resolve({
+            success: "User successfully created!"
+          });
+        }catch(err){
+          await InitialUser.remove({_id: initialUser._id});
+          reject(ErrorHandler.handleErr(fname, err, constants.errType.DB, 400));
+        }
       }catch (err) {
-        reject(ErrorHandler.handleErr('UserCtrl.createUser: ', err,
-            constants.errType.DB, 400))
+        reject(ErrorHandler.handleErr(fname, err, constants.errType.DB, 400))
       }
     });
   }

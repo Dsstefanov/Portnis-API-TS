@@ -2,7 +2,6 @@ import {ErrorHandler} from "../../components/ErrorHandler";
 import {Config} from "../../components/Config";
 
 export async function defaultCtrlCall(res, method: Function, ...params) {
-  console.log(method);
   try {
     const data = await method.apply(null, params);
     if (data) {

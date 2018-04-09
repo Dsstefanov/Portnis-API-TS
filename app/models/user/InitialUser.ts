@@ -2,6 +2,7 @@ import {Connection, Document, Schema, Types} from 'mongoose';
 import * as validator from 'mongoose-validators';
 import {getConnection} from '../../components/database/DbConnect';
 import {ErrorHandler} from "../../components/ErrorHandler";
+import {cleanObject} from "../../services/general/DbService";
 
 const bcrypt = require('bcrypt-nodejs');
 const db = getConnection();
@@ -10,7 +11,7 @@ export class InitialUser {
   email: string;
   password?: string;
   remember_token?: string;
-  userId: string;
+  userId?: string;
 }
 
 export const InitialUserSchema = new Schema({
@@ -29,7 +30,8 @@ export interface IInitialUser extends InitialUser, Document {
 }
 
 InitialUserSchema.pre('save', function (next) {
-  InitialUserSchema.methods.encryptPassword(next);
+  const user :any = this;
+  user.encryptPassword(next);
 });
 
 /**
@@ -40,13 +42,12 @@ InitialUserSchema.pre('save', function (next) {
  */
 InitialUserSchema.methods.encryptPassword = function (next) {
   const user = this;
-
   // Only hash the password if it has been modified (or is new)
   if (!user.isModified('password')) {
     return next();
   }
 
-  if (user.password.length <= 8) {
+  if (user.password.length < 8) {
     return next(new Error('Password does not match criteria'));
   }
 
@@ -103,6 +104,17 @@ InitialUserSchema.methods.comparePassword = async function (candidatePassword: s
     return bcrypt.compareSync(candidatePassword, user.password);
   }
 };
+
+InitialUserSchema.statics.toModelObject = function (req, dbService) {
+  const User = dbService.getModel('InitialUser'); //Require model
+  const result = new User(); //New User model object
+
+  result.email = req.body.email;
+  result.password = req.body.password;
+
+  return cleanObject(result);
+};
+
 
 export default function (db: Connection) {
   db.model<IInitialUser>('InitialUser', InitialUserSchema);
