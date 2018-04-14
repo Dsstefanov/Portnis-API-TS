@@ -15,6 +15,7 @@ const baseHost = process.env.WEBSITE_HOSTNAME || 'localhost';
 const DB_CHECK_INTERVAL = 500;
 const DB_TIMEOUT = 60000;
 const mongoSanitize = require('express-mongo-sanitize');
+const cookieParser = require('cookie-parser');
 
 const allowedDomains = {
   portnis: 'http://localhost:8000'
@@ -47,6 +48,7 @@ const app = express();
 const server = http.createServer(app);
 
 app.use(compression()); //use compression
+app.use(cookieParser());
 
 // Set application to parse body as JSON
 // Requests should have Content-Type = 'application/json'

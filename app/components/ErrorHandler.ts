@@ -18,16 +18,21 @@ export class ErrorHandler {
    * @param {String} type The error type - VALIDATION, RESTRICTION, SECURITY, PRECONDITION
    * @param {number} code The status code
    * @param {String} [inner] Inner exception/error, will be printed out separately
+   * @param {Boolean} noLogging If exception shall not be logged in db
    * @returns {{msg: *, type: *, code: *}} Object containing the error message, type and code
    */
-  static handleErr(functionName, msg, type, code, inner?) {
-    if (functionName && !config.testMode) {
-      this.createErrorLog(functionName, `${type} ${msg}`);
+  static handleErr(functionName, msg, type, code, inner?, noLogging?) {
+    if (functionName && !config.testMode && !noLogging) {
+      if(!noLogging) {
+        this.createErrorLog(functionName, `${type} ${msg}`);
+      }
       if (inner) {
         if (typeof inner === 'object' && inner.code) {
           this.handleErr(functionName, inner.msg, inner.type, inner.code, inner.inner);
         } else {
-          this.createErrorLog(functionName, inner.message);
+          if(!noLogging) {
+            this.createErrorLog(functionName, inner.message);
+          }
         }
       }
     }

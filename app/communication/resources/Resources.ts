@@ -1,6 +1,7 @@
 const appPackage = require('../../../../package.json');
 const constants = require('../../components/Constants');
 import {UserRoutes} from "./UserResources"
+import {AuthRoutes} from "./AuthResources";
 
 /**
  * General resource file that should require the other resource files
@@ -26,6 +27,6 @@ export function initializeResources(app, router) {
   });
 
   // Require routes related to different models
-  //TODO init the routes
   UserRoutes(router);
+  AuthRoutes(router);
 }

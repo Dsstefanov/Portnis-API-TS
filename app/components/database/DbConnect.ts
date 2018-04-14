@@ -9,8 +9,7 @@ import {Config} from "../Config";
  *
  * @returns {Connection} the created Connection object
  */
-export function getConnection(): Connection {
-
+export function getConnection() :Connection{
   let dbOptions = {};
   /* TODO FIX PRODUCTION DB TO WORK*/
   Config.config.database.production = false;

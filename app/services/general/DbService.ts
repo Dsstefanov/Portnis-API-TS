@@ -84,11 +84,15 @@ export function DbService(db: Connection) {
   };
 
   const findByIdNotNull = async function <T extends Document>(modelName, modelId, lean?,
-                                                              populate?, projection?): Promise<T> {
+                                                              populate?, projection?, noLogging?): Promise<T> {
     const model = await findById<T>(modelName, modelId, lean, populate, projection);
     if (model === null) {
-      throw ErrorHandler.handleErrDb(null,
-          `Could not fetch ${modelName.toLowerCase()} model for id: ${modelId}`);
+      if (noLogging) {
+        throw  `Could not fetch ${modelName.toLowerCase()} model for id: ${modelId}`;
+      } else {
+        throw ErrorHandler.handleErrDb(null,
+            `Could not fetch ${modelName.toLowerCase()} model for id: ${modelId}`);
+      }
     }
     return model;
   };
@@ -106,14 +110,16 @@ export function DbService(db: Connection) {
     return null;
   };
 
-  const findOneNotNull = async function <T extends Document>(modelName, conditions, lean?, fields?, options?,
-                                                             populate?): Promise<T> {
-    const model = await findOne<T>(modelName, conditions, lean, fields, options, populate);
-    if (model === null) {
-      throw ErrorHandler.handleErrDb(null,
-          `Could not fetch ${modelName.toLowerCase()} model ${modelName} for condition: ${conditions}`,);
-    }
-    return model;
+  const findOneNotNull = function <T extends Document>(modelName, conditions, lean?, fields?, options?,
+                                                       populate?, noLogging?): Promise<T> {
+    return new Promise(async (resolve, reject) => {
+      const model = await findOne<T>(modelName, conditions, lean, fields, options, populate);
+      if (model === null) {
+        reject(ErrorHandler.handleErr(null,
+            `Model ${modelName} for condition: ${JSON.stringify(conditions)} was not found.`, constants.errType.DB, 404, null, true));
+      }
+      resolve(model);
+    });
   };
 
   const count = async function (modelName, conditions) {
@@ -217,39 +223,43 @@ export function DbService(db: Connection) {
    * @param {Object} [options] Additional options can be added here. For example
    *                                  { multi: true } it will update all the documents that matches
    *                                  the conditions.
-   * @param {function} callback callback(err) The function that will run after
-   *  err (Object) null if there are no errors
    * @return {Promise}
    */
-  const update = function (modelName: string, conditions: object, update: object, options?, callback?): Promise<any> {
-    let Model;
+  /*const update = function (modelName: string, conditions: object, update: object, options?): Promise<any> {
+    return new Promise(async (resolve, reject) => {
+      let Model = db.model(modelName);
 
-    if (typeof options === 'function') {
-      callback = options;
-      options = {};
-      Model = db.model(modelName);
-    } else {
-      Model = db.model(modelName);
-    }
+      resolve(Model.update(conditions, update, options)
+          .exec()
+          .catch(err => {
+            reject(ErrorHandler.handleErr(null,
+                `Could not update ${modelName.toLowerCase()} models. Conditions: ` +
+                `${conditions} update: ${update} options: ${options}`,
+                constants.errType.DB, 400, err));
+          }));
+    });
+  };*/
 
-    if (typeof callback === 'function') {
-      return Model.update(conditions, update, options, function (err) {
-        if (err) {
-          err = ErrorHandler.handleErr(null,
-              `Could not update ${modelName.toLowerCase()} models. Conditions: ` +
-              `${conditions} update: ${update} options: ${options}`,
-              constants.errType.DB, 400, err);
-        }
+  /**
+   * Update models
+   *
+   * @param {String} modelName The name of the model for example: User, InitialUser, Contact
+   * @param {Object} conditions The query parameters for example {'username': 'dsstefanov'}
+   * @param {Object} update Object with fields the fields that shall be replaced
+   * @return {Promise}
+   */
+  const update = function (modelName: string, conditions: object, update: object): Promise<any> {
+    return new Promise(async (resolve, reject) => {
+      let Model = db.model(modelName);
 
-        return callback(err);
-      });
-    }
-
-    return Model.update(conditions, update, options).exec().catch(err => {
-      throw ErrorHandler.handleErr(null,
-          `Could not update ${modelName.toLowerCase()} models. Conditions: ` +
-          `${conditions} update: ${update} options: ${options}`,
-          constants.errType.DB, 400, err);
+      resolve(Model.findOneAndUpdate(conditions, update)
+          .exec()
+          .catch(err => {
+            reject(ErrorHandler.handleErr(null,
+                `Could not update ${modelName.toLowerCase()} models. Conditions: ` +
+                `${conditions} update: ${update}`,
+                constants.errType.DB, 400, err));
+          }));
     });
   };
 
@@ -263,7 +273,7 @@ export function DbService(db: Connection) {
    * @returns {Promise<any>}
    */
   const removeModel = async function (modelName: string, conditions: Object,
-                                callback?: Function): Promise<any> {
+                                      callback?: Function): Promise<any> {
     let Model = await db.model(modelName);
 
     if (typeof callback === 'function') {
