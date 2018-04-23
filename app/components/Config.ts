@@ -25,6 +25,7 @@ export class Config {
       'local': {
         'uri': 'localhost:27017',
         'port': 27017,
+        'path': '/dbs/localDb',
         'logPath': '/dbs/localDb/mongodb.log'
       },
       'productiondb': {

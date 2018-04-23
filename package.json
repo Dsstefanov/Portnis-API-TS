@@ -3,7 +3,9 @@
   "version": "2.0.0",
   "scripts": {
     "prestart": "tsc",
+    "pretest": "tsc",
     "start": "node dist/server.js --local",
+    "test": "node dist/server.js --local --test",
     "docs": "apidoc -i app -o doc",
     "ext-docs": "apidoc -i app -o ext-doc -f \"_apidoc\\.js\" -f \"ExternalResources\\.ts\""
   },

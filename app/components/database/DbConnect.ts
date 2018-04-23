@@ -4,12 +4,18 @@ const mongoose = require('mongoose');
 mongoose.Promise = global.Promise; // set native Promise to avoid using deprecated one
 import {Config} from "../Config";
 
+let connection :Connection;
+
 /**
  * Creates a database connection
  *
  * @returns {Connection} the created Connection object
  */
 export function getConnection() :Connection{
+  if(connection){
+    return connection;
+  }
+  console.log('CALLED');
   let dbOptions = {};
   /* TODO FIX PRODUCTION DB TO WORK*/
   Config.config.database.production = false;
@@ -63,6 +69,7 @@ export function getConnection() :Connection{
       requireFiles(dbObject);
     });
   }
+  connection = dbObject;
   return dbObject;
 }
 
