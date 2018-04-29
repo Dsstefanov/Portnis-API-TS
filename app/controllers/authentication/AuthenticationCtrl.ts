@@ -4,18 +4,19 @@ import {ErrorHandler} from "../../components/ErrorHandler";
 import {IInitialUser} from "../../models/user/InitialUser";
 
 const constants = require('./../../components/Constants');
-const db = getConnection();
-const dbService = DbService(db);
 
 export class AuthenticationCtrl {
+  db = getConnection();
+  dbService = DbService(this.db);
+
   login(req) {
     const fname = 'AuthenticationCtrl.login';
     return new Promise(async function (resolve, reject) {
-      const InitialUser: any = dbService.getModel('InitialUser');
-      let reqUser = await InitialUser.toModelObject(req, dbService);
+      const InitialUser: any = this.dbService.getModel('InitialUser');
+      let reqUser = await InitialUser.toModelObject(req, this.dbService);
       let dbUser :any;
       try {
-        dbUser = await dbService.findOneNotNull('InitialUser', {email: reqUser.email},
+        dbUser = await this.dbService.findOneNotNull('InitialUser', {email: reqUser.email},
             false, '+password');
       }catch (err) {
         reject(err);
@@ -28,7 +29,7 @@ export class AuthenticationCtrl {
         dbUser.remember_token = generateGUID();
         json._id = dbUser._id;
         json.remember_token = dbUser.remember_token;
-        dbService.save(dbUser);
+        this.dbService.save(dbUser);
         resolve(json);
       }
     });

@@ -3,18 +3,19 @@ import {DbService} from "../../services/general/DbService";
 import {ErrorHandler} from "../../components/ErrorHandler";
 
 const constants = require('./../../components/Constants');
-const dbService = DbService(getConnection());
+
 
 
 export class UserCtrl {
+  dbService = DbService(getConnection());
 
   createUser(req) {
     const fname = 'UserCtrl.createUser';
     return new Promise(async (resolve, reject) => {
       try {
-        const InitialUser: any = dbService.getModel('InitialUser');
-        const User: any = dbService.getModel('User');
-        let initialUser = await InitialUser.create(InitialUser.toModelObject(req, dbService));
+        const InitialUser: any = this.dbService.getModel('InitialUser');
+        const User: any = this.dbService.getModel('User');
+        let initialUser = await InitialUser.create(InitialUser.toModelObject(req, this.dbService));
         let user;
         try {
           user = new User();
@@ -38,7 +39,7 @@ export class UserCtrl {
     const fname = 'UserCtrl.isEmailUnique';
     return new Promise(async (resolve, reject) => {
       try {
-        const user = await dbService.findOne('InitialUser', {email: req.params.email}, true, '_id');
+        const user = await this.dbService.findOne('InitialUser', {email: req.params.email}, true, '_id');
         resolve(user);
       } catch (err) {
         reject(ErrorHandler.handleErr(fname, err, constants.errType.DB, 400));
@@ -50,7 +51,7 @@ export class UserCtrl {
     const fname = 'UserCtrl.getUserById';
     return new Promise(((resolve, reject) => {
       try {
-        resolve(dbService.findOneNotNull('User', {_id: req.initialUser.userId}, true/*, null, null,
+        resolve(this.dbService.findOneNotNull('User', {_id: req.initialUser.userId}, true/*, null, null,
             'skills projects contact socialMedias' TODO uncomment when all models are registered*/));
       }catch (err){
         reject(ErrorHandler.handleErrDb(fname, err));
@@ -62,7 +63,7 @@ export class UserCtrl {
     const fname = 'UserCtrl.getUserByUsername';
     return new Promise(((resolve, reject) => {
       try {
-        resolve(dbService.findOneNotNull('User', {username: req.params.username}, true/*, null, null,
+        resolve(this.dbService.findOneNotNull('User', {username: req.params.username}, true/*, null, null,
             'skills projects contact socialMedias' TODO uncomment when all models are registered*/));
       }catch (err){
         reject(ErrorHandler.handleErrDb(fname, err));
@@ -74,10 +75,10 @@ export class UserCtrl {
     const fname = 'UserCtrl.updateUser';
     return new Promise(async (resolve, reject) => {
       try {
-        const User :any = await dbService.getModel('User');
-        let reqUser = await User.toModelObject(req, dbService);
+        const User :any = await this.dbService.getModel('User');
+        let reqUser = await User.toModelObject(req, this.dbService);
         reqUser._id = req.initialUser.userId._id;
-        await dbService.update('User', {_id: reqUser._id}, reqUser);
+        await this.dbService.update('User', {_id: reqUser._id}, reqUser);
         resolve('Successfully updated');
       }catch (err){
         reject(ErrorHandler.handleErrDb(fname, err));
@@ -91,15 +92,15 @@ export class UserCtrl {
       console.log(req.body);
       let dbUser :any;
       try {
-        dbUser = await dbService.findOneNotNull('InitialUser', {_id: req.cookies[constants.hashes.userId]},
+        dbUser = await this.dbService.findOneNotNull('InitialUser', {_id: req.cookies[constants.hashes.userId]},
             false, '+password');
       }catch (err) {
         reject(err);
       }
       if (await dbUser.comparePassword(req.body.password) === true) {
         await Promise.all([
-          dbService.removeModel('InitialUser', {_id: req.initialUser._id}),
-          dbService.removeModel('User', {_id: req.initialUser.userId._id})
+          this.dbService.removeModel('InitialUser', {_id: req.initialUser._id}),
+          this.dbService.removeModel('User', {_id: req.initialUser.userId._id})
         ]);
         resolve('Successfully deleted');
       }

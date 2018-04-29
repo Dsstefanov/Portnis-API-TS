@@ -3,9 +3,9 @@ import {authorize} from "../Authorization";
 import {UserCtrl} from "../../controllers/user/UserCtrl";
 import {AuthenticationCtrl} from "../../controllers/authentication/AuthenticationCtrl";
 
-const userCtrl = new UserCtrl();
-
 export function UserRoutes(router) {
+
+  const userCtrl = new UserCtrl();
 
   /**
    * @api {post} /users/auth/register Registers a user

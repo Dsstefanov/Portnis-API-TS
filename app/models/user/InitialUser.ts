@@ -5,7 +5,6 @@ import {ErrorHandler} from "../../components/ErrorHandler";
 import {cleanObject} from "../../services/general/DbService";
 
 const bcrypt = require('bcrypt-nodejs');
-const db = getConnection();
 
 export class InitialUser {
   email: string;
@@ -83,6 +82,7 @@ InitialUserSchema.methods.encryptPassword = function (next) {
  * @param  callback Callback method
  */
 InitialUserSchema.methods.comparePassword = async function (candidatePassword: string, callback?: Function) {
+  const db = getConnection();
   if (callback) {
     const User = db.model<IInitialUser>('InitialUser');
     User.findOne({_id: this._id}, 'password')

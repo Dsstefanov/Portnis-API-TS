@@ -15,7 +15,6 @@ export function getConnection() :Connection{
   if(connection){
     return connection;
   }
-  console.log('CALLED');
   let dbOptions = {};
   /* TODO FIX PRODUCTION DB TO WORK*/
   Config.config.database.production = false;

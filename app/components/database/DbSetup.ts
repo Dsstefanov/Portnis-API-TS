@@ -61,18 +61,21 @@ module.exports = function () {
    * @return {Promise}
    */
   function initializeMongodInstance(dbPath, dbPort, logPath) {
-    return tcpPortUsed.check(parseInt(dbPort), '127.0.0.1').then(function (inUse) {
+    return tcpPortUsed.check(parseInt(dbPort), '127.0.0.1').then(async function (inUse) {
       if (!inUse) {
         let cmd = '%mongod% ';
 
-        if (dbPath) {
+        /*FIXME dbPath and logPath cause errors at creating the mongo instance*/
+        /*if (dbPath) {
           cmd += ' --dbpath ' + `"${dbPath}"`;
-        }
+        }*/
+        /*if (logPath) {
+          let command = 'copy nul ' + `"${logPath}"`;
+          await exec(command);
+          cmd += ' --logpath ' + `"'${logPath}"`;
+        }*/
         if (dbPort) {
           cmd += ' --port ' + dbPort;
-        }
-        if (logPath) {
-          cmd += ' --logpath ' + `"${logPath}"`;
         }
 
         if (os.platform() === 'linux') {
@@ -83,7 +86,8 @@ module.exports = function () {
             stdio: 'inherit',
             detached: true
           };
-          return spawn('cmd', ['/c', cmd], options);
+          await spawn('cmd', ['/c', cmd], options);
+          return await tcpPortUsed.waitUntilUsed(dbPort, 500, 15000);
         }
       }
     }).catch(function (err) {
@@ -99,7 +103,7 @@ module.exports = function () {
    * @return {Promise}
    */
   function stopMongodInstance(dbPath, dbPort) {
-    return tcpPortUsed.check(dbPort, '127.0.0.1').then(function (inUse) {
+    return tcpPortUsed.check(dbPort, '127.0.0.1').then(async function (inUse) {
       if (inUse) {
         let command;
         if (os.platform() === 'linux') {
@@ -108,10 +112,10 @@ module.exports = function () {
           command = 'mongo --port ' + dbPort + ' --eval db.getSiblingDB(\'admin\').shutdownServer()';
         }
 
-        return exec(command);
+        return await exec(command);
       }
-    }).then(function () {
-      return tcpPortUsed.waitUntilFree(dbPort, 500, 10000);
+    }).then(async function () {
+      return await tcpPortUsed.waitUntilFree(dbPort, 500, 15000);
     }).catch(function (err) {
       console.log(err);
     });

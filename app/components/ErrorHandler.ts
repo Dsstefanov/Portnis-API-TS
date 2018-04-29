@@ -1,12 +1,13 @@
 import {getConnection} from './database/DbConnect'
 import {Config} from "./Config";
+
 const config = Config.config;
 const moment = require('moment');
 const constants = require('../components/Constants');
-const db = getConnection();
 import {logError} from './logger/Logger';
 
 export class ErrorHandler {
+
   /**
    * Creates the object that should be sent back to resources when an error occurs.
    * Common operations in relation to errors that should be sent back to requester should be
@@ -21,16 +22,17 @@ export class ErrorHandler {
    * @param {Boolean} noLogging If exception shall not be logged in db
    * @returns {{msg: *, type: *, code: *}} Object containing the error message, type and code
    */
-  static handleErr(functionName, msg, type, code, inner?, noLogging?) {
+  static async handleErr(functionName, msg, type, code, inner?, noLogging?) {
+
     if (functionName && !config.testMode && !noLogging) {
-      if(!noLogging) {
+      if (!noLogging) {
         this.createErrorLog(functionName, `${type} ${msg}`);
       }
       if (inner) {
         if (typeof inner === 'object' && inner.code) {
           this.handleErr(functionName, inner.msg, inner.type, inner.code, inner.inner);
         } else {
-          if(!noLogging) {
+          if (!noLogging) {
             this.createErrorLog(functionName, inner.message);
           }
         }
@@ -42,7 +44,7 @@ export class ErrorHandler {
       code: code,
       inner: inner
     };
-  }
+  };
 
   /**
    * Creates an error log
@@ -52,10 +54,12 @@ export class ErrorHandler {
    */
   static async createErrorLog(functionName, message) {
     console.log(`${moment().format()} - ERROR: ${functionName} - ${message}`);
-
+    const db = getConnection();
     const ErrorLog = db.model('ErrorLog');
-    const errorLogModel = await ErrorLog.create({functionName: functionName,
-    message: message, timeStamp: moment()});
+    const errorLogModel = await ErrorLog.create({
+      functionName: functionName,
+      message: message, timeStamp: moment()
+    });
     errorLogModel.save(function (err) {
       if (err) {
         console.log('Error saving ErrorLog! WTF?');

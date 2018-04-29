@@ -3,10 +3,8 @@ import {authorize} from "../Authorization";
 import {UserCtrl} from "../../controllers/user/UserCtrl";
 import {AuthenticationCtrl} from "../../controllers/authentication/AuthenticationCtrl";
 
-const authCtrl = new AuthenticationCtrl();
-
 export function AuthRoutes(router) {
-
+  const authCtrl = new AuthenticationCtrl();
   /**
    * @api {post} /users/auth/login Logs in the user
    * @apiDescription Sets headers and logs the user in
