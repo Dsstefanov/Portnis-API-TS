@@ -12,7 +12,7 @@ const path = require('path');
  * @return {Promise} Resolves when the database instance is running
  * (not when connection is established)
  */
-module.exports = function() {
+module.exports = async function() {
   if (Config.config.database.production) {
     return Promise.resolve();
   }
@@ -21,6 +21,7 @@ module.exports = function() {
   let logPath = process.cwd();
   let dbPort = Config.config.database.local.port;
 
+  await initializeMasterDb(dbPort);
   if (Config.config.testMode) {
     dbPath += path.normalize(Config.config.database.test.path);
     logPath += path.normalize(Config.config.database.test.logPath);
@@ -57,7 +58,7 @@ module.exports = function() {
   function initializeMongodInstance(dbPath, dbPort, logPath) {
     return tcpPortUsed.check(parseInt(dbPort), '127.0.0.1').then(function(inUse) {
       if (!inUse) {
-        let cmd = 'mongod';
+        let cmd = '%mongod%';
 
         if (dbPath) {
           cmd += ' --dbpath ' + dbPath;
@@ -77,7 +78,9 @@ module.exports = function() {
             stdio: 'inherit',
             detached: true
           };
-          return spawn('cmd', ['/c', cmd], options);
+          spawn('cmd', ['/c', cmd], options);
+          tcpPortUsed.waitUntilUsed(dbPort, 500, 10000);
+          return new Promise((resolve) => resolve())
         }
       }
     }).catch(function(err) {
@@ -99,7 +102,7 @@ module.exports = function() {
         if (os.platform() === 'linux') {
           command = 'mongod --dbpath ' + dbPath + ' --shutdown';
         } else {
-          command = 'mongo --port ' + dbPort + ' --eval db.getSiblingDB(\'admin\').shutdownServer()';
+          command = 'mongo --port ' + dbPort + ' admin --eval "shutdownServer()"';
         }
 
         return exec(command);

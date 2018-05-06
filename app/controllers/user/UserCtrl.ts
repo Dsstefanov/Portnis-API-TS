@@ -1,6 +1,9 @@
 import {getConnection} from "../../components/database/DbConnect";
 import {DbService} from "../../services/general/DbService";
 import {ErrorHandler} from "../../components/ErrorHandler";
+import {ISocialMedias} from "../../models/user/SocialMedias";
+import {IUser} from "../../models/user/User";
+import {Model} from 'mongoose';
 
 const constants = require('./../../components/Constants');
 const dbService = DbService(getConnection());
@@ -50,9 +53,9 @@ export class UserCtrl {
     const fname = 'UserCtrl.getUserById';
     return new Promise(((resolve, reject) => {
       try {
-        resolve(dbService.findOneNotNull('User', {_id: req.initialUser.userId}, true/*, null, null,
-            'skills projects contact socialMedias' TODO uncomment when all models are registered*/));
-      }catch (err){
+        resolve(dbService.findOneNotNull('User', {_id: req.initialUser.userId}, true, null, null,
+            /*'skills projects contact socialMedias'*/'socialMedias'));
+      } catch (err) {
         reject(ErrorHandler.handleErrDb(fname, err));
       }
     }))
@@ -64,7 +67,7 @@ export class UserCtrl {
       try {
         resolve(dbService.findOneNotNull('User', {username: req.params.username}, true/*, null, null,
             'skills projects contact socialMedias' TODO uncomment when all models are registered*/));
-      }catch (err){
+      } catch (err) {
         reject(ErrorHandler.handleErrDb(fname, err));
       }
     }))
@@ -74,13 +77,39 @@ export class UserCtrl {
     const fname = 'UserCtrl.updateUser';
     return new Promise(async (resolve, reject) => {
       try {
-        const User :any = await dbService.getModel('User');
+        const User: any = await dbService.getModel('User');
         let reqUser = await User.toModelObject(req, dbService);
         reqUser._id = req.initialUser.userId._id;
         await dbService.update('User', {_id: reqUser._id}, reqUser);
         resolve('Successfully updated');
-      }catch (err){
+      } catch (err) {
         reject(ErrorHandler.handleErrDb(fname, err));
+      }
+    });
+  }
+
+  updateUserSocialMedias(req) {
+    const fname = 'UserCtrl.updateUserSocialMedias';
+    return new Promise(async (resolve, reject) => {
+      try {
+        const SocialMedias: any = await dbService.getModel<ISocialMedias>('SocialMedias');
+        let reqSocialMedias: ISocialMedias = SocialMedias.toModelObject(req, dbService);
+        let user: IUser = await dbService.findByIdNotNull<IUser>('User', req.initialUser.userId, true);
+        let dbSocialMedias: ISocialMedias;
+
+        if (user.hasOwnProperty('socialMedias')) {
+          reqSocialMedias._id = user.socialMedias;
+          await dbService.update('SocialMedias', {_id: user.socialMedias}, reqSocialMedias);
+        } else {
+          dbSocialMedias = new SocialMedias(reqSocialMedias);
+          dbSocialMedias.save();
+          user.socialMedias = reqSocialMedias._id;
+          await dbService.update('User', {_id: user._id}, user);
+        }
+
+        resolve('Successfully updated');
+      } catch (err) {
+        reject(ErrorHandler.handleErrDb(fname, err.message));
       }
     });
   }
@@ -89,11 +118,11 @@ export class UserCtrl {
     const fname = 'UserCtrl.deleteUser';
     return new Promise(async (resolve, reject) => {
       console.log(req.body);
-      let dbUser :any;
+      let dbUser: any;
       try {
         dbUser = await dbService.findOneNotNull('InitialUser', {_id: req.cookies[constants.hashes.userId]},
             false, '+password');
-      }catch (err) {
+      } catch (err) {
         reject(err);
       }
       if (await dbUser.comparePassword(req.body.password) === true) {

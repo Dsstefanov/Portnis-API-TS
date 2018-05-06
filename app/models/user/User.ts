@@ -46,9 +46,9 @@ UserSchema.pre('save', function (next) {
 });
 
 /**
- * Validates and encrypts the user's password
+ * check whether all fields are filled out
  *
- * @param {function} next The callback to be called when password encrypted or with an error
+ * @param {function} next The callback to be called when the check is done
  * @returns {*}
  */
 UserSchema.methods.checkUserComplete = function (next) {
