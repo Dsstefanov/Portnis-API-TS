@@ -62,7 +62,7 @@ UserSchema.methods.checkUserComplete = function (next) {
       user.projects && user.projects.isArray() && user.projects.length > 0 &&
       user.skills && user.skills.isArray() && user.skills.length > 0 && user.contact;
 
-  next()
+  next();
 
 };
 

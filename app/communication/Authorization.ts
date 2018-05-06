@@ -22,7 +22,7 @@ export async function authorize(req, isAuthReq? :boolean) {
     if (isMatching && isAuthReq) {
       return true;
     } else if (isMatching) {
-      req.initialUser = initialUser;
+      req.initialUser = JSON.parse(JSON.stringify(initialUser));
       return true;
     }
     ErrorHandler.handleErr(fname, 'Unauthorized. The request has not been applied because it lacks valid authentication credentials for the target resource.',

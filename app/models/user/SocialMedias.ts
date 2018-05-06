@@ -30,11 +30,12 @@ SocialMediasSchema.pre('save', function (next) {
 
 SocialMediasSchema.methods.checkModelComplete = function (next: any) {
   const socialMedias = this;
-  this.valid = socialMedias.facebook && typeof socialMedias.facebook === 'string' &&
-      socialMedias.linkedIn && typeof socialMedias.linkedIn === 'string' &&
-      socialMedias.github && typeof socialMedias.github === 'string';
-  next()
-
+  this.valid = !!(socialMedias.facebook && typeof socialMedias.facebook === 'string' &&
+      socialMedias.facebook !== '' && socialMedias.linkedIn &&
+      typeof socialMedias.linkedIn === 'string' && socialMedias.linkedIn !== '' &&
+      socialMedias.github && typeof socialMedias.github === 'string' &&
+      socialMedias.github !== '');
+  next();
 };
 
 SocialMediasSchema.statics.toModelObject = function (req, dbService) {

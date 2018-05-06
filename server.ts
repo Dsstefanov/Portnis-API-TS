@@ -90,11 +90,11 @@ if (Config.config.logging.requests) {
 // Used to allow cross domain requests from clients
 app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "http://localhost:8000");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   res.header("Access-Control-Allow-Methods", 'GET, POST, PUT, DELETE');
-  res.header["Access-Control-Allow-Headers"] = "X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+  res.header["Access-Control-Allow-Headers"] = "X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept";
   res.header("Access-Control-Allow-Credentials", true);
-  next()
+  next();
 });
 
 app.all(allowedDomains.portnis, mongoSanitize());

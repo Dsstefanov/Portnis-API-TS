@@ -4,6 +4,7 @@ import {ErrorHandler} from "../../components/ErrorHandler";
 import {ISocialMedias} from "../../models/user/SocialMedias";
 import {IUser} from "../../models/user/User";
 import {Model} from 'mongoose';
+import {IInitialUser} from "../../models/user/InitialUser";
 
 const constants = require('./../../components/Constants');
 const dbService = DbService(getConnection());
@@ -53,10 +54,11 @@ export class UserCtrl {
     const fname = 'UserCtrl.getUserById';
     return new Promise(((resolve, reject) => {
       try {
-        resolve(dbService.findOneNotNull('User', {_id: req.initialUser.userId}, true, null, null,
-            /*'skills projects contact socialMedias'*/'socialMedias'));
+        const user = dbService.findOneNotNull('User', {_id: req.initialUser.userId}, true, null, null,
+            /*'skills projects contact socialMedias'*/'socialMedias');
+        return resolve(user);
       } catch (err) {
-        reject(ErrorHandler.handleErrDb(fname, err));
+        return reject(ErrorHandler.handleErrDb(fname, err));
       }
     }))
   }
@@ -65,8 +67,8 @@ export class UserCtrl {
     const fname = 'UserCtrl.getUserByUsername';
     return new Promise(((resolve, reject) => {
       try {
-        resolve(dbService.findOneNotNull('User', {username: req.params.username}, true/*, null, null,
-            'skills projects contact socialMedias' TODO uncomment when all models are registered*/));
+        resolve(dbService.findOneNotNull('User', {username: req.params.username}, true, null, null, 'socialMedias'
+            /*'skills projects contact socialMedias' TODO uncomment when all models are registered*/));
       } catch (err) {
         reject(ErrorHandler.handleErrDb(fname, err));
       }
@@ -117,22 +119,26 @@ export class UserCtrl {
   deleteUser(req) {
     const fname = 'UserCtrl.deleteUser';
     return new Promise(async (resolve, reject) => {
-      console.log(req.body);
       let dbUser: any;
       try {
-        dbUser = await dbService.findOneNotNull('InitialUser', {_id: req.cookies[constants.hashes.userId]},
+        dbUser = await dbService.findOneNotNull<IInitialUser>('InitialUser', {_id: req.cookies[constants.hashes.userId]},
             false, '+password');
       } catch (err) {
-        reject(err);
+        return reject(err);
       }
-      if (await dbUser.comparePassword(req.body.password) === true) {
-        await Promise.all([
-          dbService.removeModel('InitialUser', {_id: req.initialUser._id}),
-          dbService.removeModel('User', {_id: req.initialUser.userId._id})
-        ]);
-        resolve('Successfully deleted');
+      if (await dbUser.comparePassword(req.body.password)) {
+        const user = await dbService.findByIdNotNull<IUser>('User', req.initialUser.userId);
+        const promises: Promise<any>[] = [];
+        promises.push(dbService.removeModel('InitialUser', {_id: req.initialUser._id}));
+        promises.push(dbService.removeModel('User', {_id: req.initialUser.userId._id}));
+        if(user.socialMedias){
+          promises.push(dbService.removeModel('SocialMedias', {_id: user.socialMedias}));
+        }
+        await Promise.all(promises);
+        return resolve('Successfully deleted');
+      } else {
+        return reject({ msg: 'Passwords do not match!', code: 400 });
       }
-      reject(ErrorHandler.handleErr(fname, 'Passwords do not match!', constants.errType.DB, 400));
     });
   }
 }

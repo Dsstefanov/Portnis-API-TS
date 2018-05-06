@@ -116,7 +116,7 @@ export function DbService(db: Connection) {
       const model = await findOne<T>(modelName, conditions, lean, fields, options, populate);
       if (model === null) {
         reject(ErrorHandler.handleErr(null,
-            `Model ${modelName} for condition: ${JSON.stringify(conditions)} was not found.`, constants.errType.DB, 404, null, true));
+            `Model ${modelName} for condition: ${JSON.stringify(conditions)} was not found.`, constants.errType.DB, 400, null, true));
       }
       resolve(model);
     });
@@ -418,7 +418,7 @@ export function DbService(db: Connection) {
     deleteMany,
     fetchModelReference
   };
-};
+}
 
 /**
  * Delete the object attributes that are null or undefined
