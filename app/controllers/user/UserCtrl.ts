@@ -5,6 +5,7 @@ import {ISocialMedias} from "../../models/user/SocialMedias";
 import {IUser} from "../../models/user/User";
 import {Model} from 'mongoose';
 import {IInitialUser} from "../../models/user/InitialUser";
+import {IContact} from "../../models/user/Contact";
 
 const constants = require('./../../components/Constants');
 const dbService = DbService(getConnection());
@@ -55,7 +56,7 @@ export class UserCtrl {
     return new Promise(((resolve, reject) => {
       try {
         const user = dbService.findOneNotNull('User', {_id: req.initialUser.userId}, true, null, null,
-            /*'skills projects contact socialMedias'*/'socialMedias');
+            /*'skills projects contact socialMedias'*/'socialMedias contact');
         return resolve(user);
       } catch (err) {
         return reject(ErrorHandler.handleErrDb(fname, err));
@@ -65,10 +66,13 @@ export class UserCtrl {
 
   getUserByUsername(req) {
     const fname = 'UserCtrl.getUserByUsername';
-    return new Promise(((resolve, reject) => {
+    return new Promise((async (resolve, reject) => {
       try {
-        resolve(dbService.findOneNotNull('User', {username: req.params.username}, true, null, null, 'socialMedias'
-            /*'skills projects contact socialMedias' TODO uncomment when all models are registered*/));
+        let user: any = await dbService.findOneNotNull<IUser>('User', {username: req.params.username}, true, null, null, 'socialMedias contact'
+            /*'skills projects contact socialMedias' TODO uncomment when all models are registered*/);
+        const initialUser = await dbService.findOneNotNull<IInitialUser>('InitialUser', {userId: user._id}, true, 'email');
+        user.email = initialUser.email;
+        resolve(user);
       } catch (err) {
         reject(ErrorHandler.handleErrDb(fname, err));
       }
@@ -106,6 +110,31 @@ export class UserCtrl {
           dbSocialMedias = new SocialMedias(reqSocialMedias);
           dbSocialMedias.save();
           user.socialMedias = reqSocialMedias._id;
+          await dbService.update('User', {_id: user._id}, user);
+        }
+
+        resolve('Successfully updated');
+      } catch (err) {
+        reject(ErrorHandler.handleErrDb(fname, err.message));
+      }
+    });
+  }
+  updateUserContact(req) {
+    const fname = 'UserCtrl.updateUserContact';
+    return new Promise(async (resolve, reject) => {
+      try {
+        const Contact: any = await dbService.getModel<IContact>('Contact');
+        let reqContact: IContact = Contact.toModelObject(req, dbService);
+        let user: IUser = await dbService.findByIdNotNull<IUser>('User', req.initialUser.userId, true);
+        let dbContact: IContact;
+
+        if (user.hasOwnProperty('contact')) {
+          reqContact._id = user.contact;
+          await dbService.update('Contact', {_id: user.contact}, reqContact);
+        } else {
+          dbContact = new Contact(reqContact);
+          dbContact.save();
+          user.contact = reqContact._id;
           await dbService.update('User', {_id: user._id}, user);
         }
 

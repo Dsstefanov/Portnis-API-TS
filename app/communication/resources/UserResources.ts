@@ -93,6 +93,25 @@ export function UserRoutes(router) {
   });
 
   /**
+   * @api {post} /users/user/:id/update/contact Updates contact information for a user
+   * @apiDescription Updates user
+   * @apiVersion 2.0.0
+   * @apiName updateUser
+   * @apiGroup Users
+   *
+   * @apiUse SimpleSuccess
+   * @apiUse BadRequestError
+   * @apiUse NotFoundError
+   * @apiUser UnauthorizedError
+   *
+   * @return InitialUser._id || null
+   */
+  router.post('/users/user/:id/update/contact', async (req, res) => {
+    await authorize(req);
+    return await defaultCtrlCall(res, userCtrl.updateUserContact, req);
+  });
+
+  /**
    * @api {post} /users/user/:id/delete Deletes
    * @apiDescription Deletes user
    * @apiVersion 2.0.0

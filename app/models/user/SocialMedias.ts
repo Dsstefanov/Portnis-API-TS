@@ -1,10 +1,6 @@
 import {Connection, Document, Schema, Types} from 'mongoose';
 import * as validator from 'mongoose-validators';
-import {getConnection} from '../../components/database/DbConnect';
-import {ErrorHandler} from "../../components/ErrorHandler";
 import {cleanObject} from "../../services/general/DbService";
-
-const db = getConnection();
 
 export class SocialMedias {
   facebook?: String;

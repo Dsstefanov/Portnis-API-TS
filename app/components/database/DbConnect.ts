@@ -73,6 +73,7 @@ function requireFiles(db) {
     require('../../models/user/InitialUser').default(db);
     require('../../models/user/User').default(db);
     require('../../models/user/SocialMedias').default(db);
+    require('../../models/user/Contact').default(db);
     require('../../models/logging/ErrorLog').default(db);
 
   } catch (error) {
