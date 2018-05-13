@@ -9,10 +9,6 @@ export function DbService(db: Connection) {
     return db.model(modelName);
   };
 
-  const toModelObject = function (modelName, req, db) {
-    return db.model(modelName).toModelObject(req, db);
-  };
-
   /**
    * Finds a model by id
    *
@@ -403,7 +399,6 @@ export function DbService(db: Connection) {
 
   return {
     getModel,
-    toModelObject,
     removeModel,
     find,
     findOne,

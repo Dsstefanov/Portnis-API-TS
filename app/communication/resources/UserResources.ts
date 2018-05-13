@@ -1,7 +1,6 @@
 import {defaultCtrlCall} from './UtilResources';
 import {authorize} from "../Authorization";
 import {UserCtrl} from "../../controllers/user/UserCtrl";
-import {AuthenticationCtrl} from "../../controllers/authentication/AuthenticationCtrl";
 
 const userCtrl = new UserCtrl();
 
@@ -109,6 +108,25 @@ export function UserRoutes(router) {
   router.post('/users/user/:id/update/contact', async (req, res) => {
     await authorize(req);
     return await defaultCtrlCall(res, userCtrl.updateUserContact, req);
+  });
+
+  /**
+   * @api {post} /users/user/:id/create/project Updates project information for a user
+   * @apiDescription Updates user
+   * @apiVersion 2.0.0
+   * @apiName updateUser
+   * @apiGroup Users
+   *
+   * @apiUse SimpleSuccess
+   * @apiUse BadRequestError
+   * @apiUse NotFoundError
+   * @apiUser UnauthorizedError
+   *
+   * @return InitialUser._id || null
+   */
+  router.post('/users/user/:id/create/project', async (req, res) => {
+    await authorize(req);
+    return await defaultCtrlCall(res, userCtrl.createUserProject, req);
   });
 
   /**

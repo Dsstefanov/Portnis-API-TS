@@ -3,6 +3,7 @@ import * as validator from 'mongoose-validators';
 import {getConnection} from '../../components/database/DbConnect';
 import {ErrorHandler} from "../../components/ErrorHandler";
 import {cleanObject} from "../../services/general/DbService";
+import {IProject} from "./Project";
 
 const db = getConnection();
 
@@ -11,8 +12,8 @@ export class User {
   personalText: string;
   username: string;
   aboutText: string;
-  projects: Schema.Types.ObjectId;
-  skills: [Schema.Types.ObjectId];
+  projects: Schema.Types.ObjectId[] | IProject[];
+  skills: Schema.Types.ObjectId[];
   profileImage: string;
   profession: string;
   socialMedias: Schema.Types.ObjectId;

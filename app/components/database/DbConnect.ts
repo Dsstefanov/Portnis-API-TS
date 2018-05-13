@@ -72,6 +72,8 @@ function requireFiles(db) {
     //TODO require all models here
     require('../../models/user/InitialUser').default(db);
     require('../../models/user/User').default(db);
+    require('../../models/user/Project').default(db);
+    require('../../models/file/File').default(db);
     require('../../models/user/SocialMedias').default(db);
     require('../../models/user/Contact').default(db);
     require('../../models/logging/ErrorLog').default(db);

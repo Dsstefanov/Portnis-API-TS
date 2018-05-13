@@ -2,10 +2,11 @@ import {getConnection} from "../../components/database/DbConnect";
 import {DbService} from "../../services/general/DbService";
 import {ErrorHandler} from "../../components/ErrorHandler";
 import {ISocialMedias} from "../../models/user/SocialMedias";
-import {IUser} from "../../models/user/User";
-import {Model} from 'mongoose';
+import {IUser, User} from "../../models/user/User";
+import {Model, Schema} from 'mongoose';
 import {IInitialUser} from "../../models/user/InitialUser";
 import {IContact} from "../../models/user/Contact";
+import {IProject} from "../../models/user/Project";
 
 const constants = require('./../../components/Constants');
 const dbService = DbService(getConnection());
@@ -39,6 +40,24 @@ export class UserCtrl {
     });
   }
 
+  createUserProject(req) {
+    const fname = 'UserCtrl.createUserProject';
+    return new Promise(async (resolve, reject) => {
+      try {
+        const getUser = dbService.findByIdNotNull<IUser>('User', req.initialUser.userId);
+        const Project: any = await dbService.getModel<IProject>('Project');
+        const project = Project.toModelObject(req, dbService);
+        await project.save();
+        const user: IUser = await getUser;
+        (user.projects as Schema.Types.ObjectId[]).push(project._id as Schema.Types.ObjectId);
+        await user.save();
+        resolve(user);
+      } catch (err) {
+        reject(ErrorHandler.handleErrDb(fname, err));
+      }
+    });
+  }
+
   isEmailUnique(req) {
     const fname = 'UserCtrl.isEmailUnique';
     return new Promise(async (resolve, reject) => {
@@ -53,10 +72,15 @@ export class UserCtrl {
 
   getUser(req) {
     const fname = 'UserCtrl.getUserById';
-    return new Promise(((resolve, reject) => {
+    return new Promise((async (resolve, reject) => {
       try {
-        const user = dbService.findOneNotNull('User', {_id: req.initialUser.userId}, true, null, null,
-            /*'skills projects contact socialMedias'*/'socialMedias contact');
+        const user = await dbService.findOneNotNull('User', {_id: req.initialUser.userId}, true, null, null,
+            /*'skills projects contact socialMedias'*/
+            [
+              {path: 'projects', model: 'Project'},
+              {path: 'contact', model: 'Contact'},
+              {path: 'socialMedias', model: 'SocialMedias'},
+            ]);
         return resolve(user);
       } catch (err) {
         return reject(ErrorHandler.handleErrDb(fname, err));
@@ -68,7 +92,14 @@ export class UserCtrl {
     const fname = 'UserCtrl.getUserByUsername';
     return new Promise((async (resolve, reject) => {
       try {
-        let user: any = await dbService.findOneNotNull<IUser>('User', {username: req.params.username}, true, null, null, 'socialMedias contact'
+        let user: any = await dbService.findOneNotNull<IUser>('User', {username: req.params.username},
+            true, null, null,
+            [
+              {path: 'projects', model: 'Project',
+                populate: {path: 'image', model: 'File'}},
+              {path: 'contact', model: 'Contact'},
+              {path: 'socialMedias', model: 'SocialMedias'},
+            ]
             /*'skills projects contact socialMedias' TODO uncomment when all models are registered*/);
         const initialUser = await dbService.findOneNotNull<IInitialUser>('InitialUser', {userId: user._id}, true, 'email');
         user.email = initialUser.email;
@@ -119,6 +150,7 @@ export class UserCtrl {
       }
     });
   }
+
   updateUserContact(req) {
     const fname = 'UserCtrl.updateUserContact';
     return new Promise(async (resolve, reject) => {
@@ -160,13 +192,13 @@ export class UserCtrl {
         const promises: Promise<any>[] = [];
         promises.push(dbService.removeModel('InitialUser', {_id: req.initialUser._id}));
         promises.push(dbService.removeModel('User', {_id: req.initialUser.userId._id}));
-        if(user.socialMedias){
+        if (user.socialMedias) {
           promises.push(dbService.removeModel('SocialMedias', {_id: user.socialMedias}));
         }
         await Promise.all(promises);
         return resolve('Successfully deleted');
       } else {
-        return reject({ msg: 'Passwords do not match!', code: 400 });
+        return reject({msg: 'Passwords do not match!', code: 400});
       }
     });
   }

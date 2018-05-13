@@ -16,6 +16,7 @@ const DB_CHECK_INTERVAL = 500;
 const DB_TIMEOUT = 60000;
 const mongoSanitize = require('express-mongo-sanitize');
 const cookieParser = require('cookie-parser');
+const multer = require('multer');
 
 const allowedDomains = {
   portnis: 'http://localhost:8000'
@@ -49,12 +50,13 @@ const server = http.createServer(app);
 
 app.use(compression()); //use compression
 app.use(cookieParser());
-
+app.use(multer({dest: './public/'}).single('file'));
 // Set application to parse body as JSON
 // Requests should have Content-Type = 'application/json'
 app.use(bodyParser.json({
   limit: 10000000
 }));
+app.use('/v2', express.static('public'));
 
 // Need for Content-Type = 'application/x-www-form-urlencoded'
 app.use(bodyParser.urlencoded({extended: false}));
@@ -89,7 +91,7 @@ if (Config.config.logging.requests) {
 
 // Used to allow cross domain requests from clients
 app.use(function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "http://localhost:8000");
+  res.header("Access-Control-Allow-Origin", "http://localhost:8001");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   res.header("Access-Control-Allow-Methods", 'GET, POST, PUT, DELETE');
   res.header["Access-Control-Allow-Headers"] = "X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept";
