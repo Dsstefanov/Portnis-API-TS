@@ -15,6 +15,10 @@ export class FileController {
         req.body = req.file;
         const File: any = dbService.getModel<IFile>('File');
         const file: IFile = File.toModelObject(req, dbService);
+        if(!file){
+          reject(ErrorHandler.handleErrValidation(fname, "No file was selected."));
+          return;
+        }
         await file.save();
         resolve(file);
       } catch (err) {

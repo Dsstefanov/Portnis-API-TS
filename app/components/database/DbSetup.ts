@@ -1,5 +1,6 @@
 import {Config} from "../Config";
 import {getConnection} from "./DbConnect";
+
 const exec = require('child-process-promise').exec;
 const spawn = require('child_process').spawn;
 const os = require('os');
@@ -12,7 +13,7 @@ const path = require('path');
  * @return {Promise} Resolves when the database instance is running
  * (not when connection is established)
  */
-module.exports = async function() {
+module.exports = async function () {
   if (Config.config.database.production) {
     return Promise.resolve();
   }
@@ -21,28 +22,34 @@ module.exports = async function() {
   let logPath = process.cwd();
   let dbPort = Config.config.database.local.port;
 
-  await initializeMasterDb(dbPort);
   if (Config.config.testMode) {
     dbPath += path.normalize(Config.config.database.test.path);
     logPath += path.normalize(Config.config.database.test.logPath);
     dbPort = Config.config.database.test.port;
-    return stopMongodInstance(dbPath, dbPort).then(function() {
-      console.log('-------- Mongod instance shut down --------');
-      return deleteTestDatabaseFiles(dbPath);
-    }).then(function() {
-      return initializeMongodInstance(dbPath, dbPort, logPath);
-    }).then(function() {
-      console.log('-------- Mongod instance initialized successfully --------');
-      return initializeMasterDb(dbPort);
-    }).catch(function(err) {
-      console.log('-------- Mongod instance did NOT initialize correctly --------');
-      console.log(err);
-    });
+  } else {
+    dbPath += path.normalize(Config.config.database.local.path);
+    logPath += path.normalize(Config.config.database.local.logPath);
+    dbPort = Config.config.database.local.port;
+  }
+  if (os.platform() !== 'linux') {
+    await stopMongodInstance(dbPath, dbPort);
+    console.log('-------- Mongod instance shut down --------');
+    if (Config.config.testMode) {
+      await deleteTestDatabaseFiles(dbPath);
+      console.log('-------- Test files cleaned --------');
+    }
+
+    await initializeMongodInstance(dbPath, dbPort, logPath);
+    console.log('-------- Mongod instance initialized successfully --------');
+
+
+    await initializeMasterDb(dbPort);
+    console.log('-------- Database initialized --------');
   } else {
     // Linux only
     logPath += os.platform() === 'linux' ? Config.config.database.local.logPath : null;
     return initializeMongodInstance(null, dbPort, logPath)
-        .then(function() {
+        .then(function () {
           initializeMasterDb(dbPort);
         });
   }
@@ -55,37 +62,32 @@ module.exports = async function() {
    * @param {String} [logPath] The path to log the mongod errors
    * @return {Promise}
    */
-  function initializeMongodInstance(dbPath, dbPort, logPath) {
-    return tcpPortUsed.check(parseInt(dbPort), '127.0.0.1').then(function(inUse) {
-      if (!inUse) {
-        let cmd = '%mongod%';
-
-        if (dbPath) {
-          cmd += ' --dbpath ' + dbPath;
-        }
-        if (dbPort) {
-          cmd += ' --port ' + dbPort;
-        }
-        if (logPath) {
-          cmd += ' --logpath ' + logPath;
-        }
-
-        if (os.platform() === 'linux') {
-          cmd += ' --fork';
-          return exec(cmd);
-        } else {
-          const options = {
-            stdio: 'inherit',
-            detached: true
-          };
-          spawn('cmd', ['/c', cmd], options);
-          tcpPortUsed.waitUntilUsed(dbPort, 500, 10000);
-          return new Promise((resolve) => resolve())
-        }
+  async function initializeMongodInstance(dbPath, dbPort, logPath) {
+    const inUse = await tcpPortUsed.check(parseInt(dbPort), '127.0.0.1');
+    if (!inUse) {
+      let cmd = '%mongod%';
+      /*if (dbPath) {
+        cmd += ` --dbpath "${dbPath}"`;
+      }*/
+      if (dbPort) {
+        cmd += ' --port ' + dbPort;
       }
-    }).catch(function(err) {
-      console.log(err);
-    });
+      /*if (logPath) {
+        cmd += ` --logpath "${logPath}"`;
+      }*/
+
+      if (os.platform() === 'linux') {
+        cmd += ' --fork';
+        return exec(cmd);
+      } else {
+        const options = {
+          stdio: 'inherit',
+          detached: true
+        };
+        spawn('cmd.exe', ['/c', cmd], options);
+        return await tcpPortUsed.waitUntilUsed(dbPort, 500, 10000);
+      }
+    }
   }
 
   /**
@@ -96,22 +98,20 @@ module.exports = async function() {
    * @return {Promise}
    */
   function stopMongodInstance(dbPath, dbPort) {
-    return tcpPortUsed.check(dbPort, '127.0.0.1').then(function(inUse) {
+    return tcpPortUsed.check(dbPort, '127.0.0.1').then(function (inUse) {
       if (inUse) {
         let command;
         if (os.platform() === 'linux') {
-          command = 'mongod --dbpath ' + dbPath + ' --shutdown';
+          command = '%mongod% --dbpath ' + `"${dbPath}"` + ' --shutdown';
         } else {
-          command = 'mongo --port ' + dbPort + ' admin --eval "shutdownServer()"';
+          command = '%mongo% --port ' + dbPort + ' admin --eval "shutdownServer()"';
         }
 
         return exec(command);
       }
-    }).then(function() {
-      return tcpPortUsed.waitUntilFree(dbPort, 500, 10000);
-    }).catch(function(err) {
-      console.log(err);
-    });
+    }).then(async () => {
+      await tcpPortUsed.waitUntilFree(dbPort, 500, 10000);
+    })
   }
 
   /**
@@ -123,17 +123,15 @@ module.exports = async function() {
    */
   function deleteTestDatabaseFiles(dbPath) {
     let deleteCommand = os.platform() === 'linux' ? 'rm -rf ' :
-        'if exist ' + dbPath + ' RMDIR /S /Q ';
-    deleteCommand += dbPath;
+        'if exist ' + `"${dbPath}"` + ' RMDIR /S /Q ';
+    deleteCommand += `"${dbPath}"`;
 
-    return exec(deleteCommand).then(function() {
+    return exec(deleteCommand).then(function () {
       let createCommand = os.platform() === 'linux' ? 'mkdir -p ' : 'mkdir ';
-      createCommand += dbPath;
+      createCommand += `"${dbPath}"`;
 
       return exec(createCommand);
-    }).catch(function(err) {
-      console.log(err);
-    });
+    })
   }
 
   /**
@@ -144,7 +142,7 @@ module.exports = async function() {
    * @param {Number} [dbPort] The database port (27017 for develop and 27018 for testing)
    */
   function initializeMasterDb(dbPort) {
-    const requireFiles = function() {
+    const requireFiles = function () {
       //Setup database with required models
       getConnection();
     };
@@ -153,11 +151,9 @@ module.exports = async function() {
       requireFiles();
     } else {
       // Wait until the mongod instance is up and running
-      tcpPortUsed.waitUntilUsed(dbPort, 500, 20000).then(function() {
+      tcpPortUsed.waitUntilUsed(dbPort, 500, 20000).then(function () {
         requireFiles();
-      }).catch(function(err) {
-        console.log(err);
-      });
+      })
     }
   }
 };

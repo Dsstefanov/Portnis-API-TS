@@ -4,6 +4,7 @@ import {getConnection} from '../../components/database/DbConnect';
 import {ErrorHandler} from "../../components/ErrorHandler";
 import {cleanObject} from "../../services/general/DbService";
 import {IProject} from "./Project";
+import {IFile} from "../file/File";
 
 const db = getConnection();
 
@@ -14,7 +15,7 @@ export class User {
   aboutText: string;
   projects: Schema.Types.ObjectId[] | IProject[];
   skills: Schema.Types.ObjectId[];
-  profileImage: string;
+  profileImage: Schema.Types.ObjectId | IFile;
   profession: string;
   socialMedias: Schema.Types.ObjectId;
   contact: Schema.Types.ObjectId;
@@ -31,7 +32,7 @@ export const UserSchema = new Schema({
   aboutText: {type: String, trim: true, validate: [validator.isLength(1, 20000)]},
   projects: {type: [Schema.Types.ObjectId], ref: 'Project'},
   skills: {type: [Schema.Types.ObjectId], ref: 'Skill'},
-  profileImage: {type: String, validate: [validator.isLength(1, 128)]},
+  profileImage: {type: Schema.Types.ObjectId, ref: 'File'},
   profession: {type: String, trim: true, validate: [validator.isLength(1, 128)]},
   socialMedias: {type: Schema.Types.ObjectId, ref: 'SocialMedias'},
   contact: {type: Schema.Types.ObjectId, ref: 'Contact'},
@@ -73,13 +74,13 @@ UserSchema.statics.toModelObject = function (req, dbService) {
 
   result.name = req.body.name;
   result.personalText= req.body.personalText;
-  result.username= req.body.username;
-  result.aboutText= req.body.aboutText;
-  result.projects= req.body.projects;
-  result.skills= req.body.skills;
-  result.profileImage= req.body.profileImage;
-  result.profession= req.body.profession;
-  result.socialMedias= req.body.socialMedias;
+  result.username = req.body.username;
+  result.aboutText = req.body.aboutText;
+  result.projects = req.body.projects;
+  result.skills = req.body.skills;
+  result.profileImage = req.body['profileImage[_id]'];
+  result.profession = req.body.profession;
+  result.socialMedias = req.body.socialMedias;
 
   return cleanObject(result);
 };

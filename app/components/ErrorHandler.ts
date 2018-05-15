@@ -77,8 +77,8 @@ export class ErrorHandler {
     return this.handleErr(functionName, msg, constants.errType.DB, 400, inner);
   };
 
-  static handleErrValidation(functionName, msg, inner) {
-    return this.handleErr(functionName, msg, constants.errType.VALIDATION, 404, inner);
+  static handleErrValidation(functionName, msg, inner?) {
+    return this.handleErr(functionName, msg, constants.errType.VALIDATION, 400, inner);
   };
 
   static handleErrRestriction(functionName, msg, inner?) {

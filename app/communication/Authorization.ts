@@ -6,7 +6,10 @@ const constants = require('../components/Constants');
 const dbService = DbService(getConnection());
 
 /**
- * Authorizes a user's remember_token, by checking validity
+ * @apiDescription Authorizes a user's remember_token, by checking validity
+ * @apiVersion 2.0.0
+ * @apiName Authorization
+ * @apiGroup Users
  *
  * @apiUse SimpleSuccess
  * @apiUse UnauthorizedError

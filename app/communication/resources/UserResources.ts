@@ -37,7 +37,7 @@ export function UserRoutes(router) {
   });
 
   /**
-   * @api {get} /users/user/:id Gets an entire user
+   * @api {get} /users/user/:id Fetches user by ID
    * @apiDescription Gets the user
    * @apiVersion 2.0.0
    * @apiName getUserById
@@ -54,16 +54,16 @@ export function UserRoutes(router) {
   });
 
   /**
-   * @api {post} /users/user/:id Updates
+   * @api {post} /users/user/:id Updates Personality properties for a user
    * @apiDescription Updates user
    * @apiVersion 2.0.0
-   * @apiName updateUser
+   * @apiName updateUserPersonality
    * @apiGroup Users
    *
    * @apiUse SimpleSuccess
    * @apiUse BadRequestError
    * @apiUse NotFoundError
-   * @apiUser UnauthorizedError
+   * @apiUse UnauthorizedError
    *
    * @return InitialUser._id || null
    */
@@ -73,16 +73,16 @@ export function UserRoutes(router) {
   });
 
   /**
-   * @api {post} /users/user/:id/update/social Updates socialMedias for a user
+   * @api {post} /users/user/:id/update/social Updates the social medias of a user
    * @apiDescription Updates user
    * @apiVersion 2.0.0
-   * @apiName updateUser
+   * @apiName updateUserSocialMedias
    * @apiGroup Users
    *
    * @apiUse SimpleSuccess
    * @apiUse BadRequestError
    * @apiUse NotFoundError
-   * @apiUser UnauthorizedError
+   * @apiUse UnauthorizedError
    *
    * @return InitialUser._id || null
    */
@@ -92,16 +92,16 @@ export function UserRoutes(router) {
   });
 
   /**
-   * @api {post} /users/user/:id/update/contact Updates contact information for a user
+   * @api {post} /users/user/:id/update/contact Updates contact information properties for a user
    * @apiDescription Updates user
    * @apiVersion 2.0.0
-   * @apiName updateUser
+   * @apiName updateUserContact
    * @apiGroup Users
    *
    * @apiUse SimpleSuccess
    * @apiUse BadRequestError
    * @apiUse NotFoundError
-   * @apiUser UnauthorizedError
+   * @apiUse UnauthorizedError
    *
    * @return InitialUser._id || null
    */
@@ -111,16 +111,16 @@ export function UserRoutes(router) {
   });
 
   /**
-   * @api {post} /users/user/:id/create/project Updates project information for a user
+   * @api {post} /users/user/:id/create/project Creates project information for a user
    * @apiDescription Updates user
    * @apiVersion 2.0.0
-   * @apiName updateUser
+   * @apiName updateUserProject
    * @apiGroup Users
    *
    * @apiUse SimpleSuccess
    * @apiUse BadRequestError
    * @apiUse NotFoundError
-   * @apiUser UnauthorizedError
+   * @apiUse UnauthorizedError
    *
    * @return InitialUser._id || null
    */
@@ -130,8 +130,8 @@ export function UserRoutes(router) {
   });
 
   /**
-   * @api {post} /users/user/:id/delete Deletes
-   * @apiDescription Deletes user
+   * @api {post} /users/user/:id/delete Delete user
+   * @apiDescription Deletes a user with all of the provided data in compliance with General Data Protection Regulation (GDPR)
    * @apiVersion 2.0.0
    * @apiName deleteUser
    * @apiGroup Users
@@ -139,7 +139,7 @@ export function UserRoutes(router) {
    * @apiUse SimpleSuccess
    * @apiUse BadRequestError
    * @apiUse NotFoundError
-   * @apiUser UnauthorizedError
+   * @apiUse UnauthorizedError
    *
    * @return InitialUser._id || null
    */
@@ -149,7 +149,7 @@ export function UserRoutes(router) {
   });
 
   /**
-   * @api {get} /users/:username Fetches user
+   * @api {get} /users/:username Fetches user by username
    * @apiDescription Get user
    * @apiVersion 2.0.0
    * @apiName getUserByUsername

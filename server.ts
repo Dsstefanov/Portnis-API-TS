@@ -91,7 +91,7 @@ if (Config.config.logging.requests) {
 
 // Used to allow cross domain requests from clients
 app.use(function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "http://localhost:8001");
+  res.header("Access-Control-Allow-Origin", "http://localhost:8000");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   res.header("Access-Control-Allow-Methods", 'GET, POST, PUT, DELETE');
   res.header["Access-Control-Allow-Headers"] = "X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept";
@@ -100,17 +100,24 @@ app.use(function (req, res, next) {
 });
 
 app.all(allowedDomains.portnis, mongoSanitize());
-
-dbSetup().then(function () {
-  initializeResources(app, express.Router());
-}).then(function () {
-  console.log('-------- Initialization completed --------');
-}).catch(function (err) {
-  console.log('-------- Error occurred during initialization --------');
-  console.error(err);
-});
-
-// Setup HTTP server to listen on port
-server.listen(port, baseHost, function () {
-  console.log('-------- Portnis API server application started --------');
+(async () => {
+  try {
+    await dbSetup();
+  } catch (err) {
+    console.error('-------- Error occurred during database set up --------');
+    throw err;
+  }
+  try {
+    await initializeResources(app, express.Router());
+    console.log('-------- Initialization completed --------');
+  } catch (err) {
+    console.log('-------- Error occurred during initialization --------');
+    console.error(err);
+  }
+  return new Promise(resolve => resolve())
+})().then(() => {
+  // Setup HTTP server to listen on port
+  server.listen(port, baseHost, function () {
+    console.log('-------- Portnis API server application started --------');
+  });
 });

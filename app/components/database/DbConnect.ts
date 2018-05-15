@@ -3,6 +3,7 @@ import {Connection} from 'mongoose'
 const mongoose = require('mongoose');
 mongoose.Promise = global.Promise; // set native Promise to avoid using deprecated one
 import {Config} from "../Config";
+let database: Connection = null;
 
 /**
  * Creates a database connection
@@ -10,6 +11,9 @@ import {Config} from "../Config";
  * @returns {Connection} the created Connection object
  */
 export function getConnection() :Connection{
+  if(database){
+    return database;
+  }
   let dbOptions = {};
   /* TODO FIX PRODUCTION DB TO WORK*/
   Config.config.database.production = false;
@@ -20,7 +24,7 @@ export function getConnection() :Connection{
           Config.config.database.local.uri;
   let connectionString = 'mongodb://' + databaseUri + '/' + Config.config.database.dbName;
 
-  console.log('****** CREATING MONGO CONNECTION to ' + connectionString + '******');
+  console.log('****** CREATING MONGO CONNECTION to ' + connectionString + ' ******');
   let dbObject = mongoose.createConnection();
 
   if (Config.config.database.production) {
@@ -63,11 +67,12 @@ export function getConnection() :Connection{
       requireFiles(dbObject);
     });
   }
+  database = dbObject;
   return dbObject;
 }
 
 function requireFiles(db) {
-  console.log('******! DbConnect Require Files !******');
+  console.log('-------- DbConnect Require Files --------');
   try {
     //TODO require all models here
     require('../../models/user/InitialUser').default(db);

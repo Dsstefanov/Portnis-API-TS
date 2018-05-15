@@ -1,5 +1,16 @@
 // This file contains common doc definitions
 
+/* ----------------------------- SIMPLE SUCCESS AND COMMON HEADERS ------------------------------ */
+
+/**
+ * @apiDefine SimpleSuccess
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *    HTTP/1.1 200 OK
+ *
+ */
+
+
 /* -------------------------------- COMMON ERROR DEFINITIONS ------------------------------------ */
 /**
  * @apiDefine NotFoundError
@@ -22,7 +33,7 @@
  */
 
 /**
- * @apiDefine AuthorizeError
+ * @apiDefine UnauthorizedError
  *
  * @apiError Unauthorized Authorization is required to consume this resource
  *
@@ -31,38 +42,7 @@
  *
  */
 
-/* ----------------------------- SIMPLE SUCCESS AND COMMON HEADERS ------------------------------ */
-
-/**
- * @apiDefine SimpleSuccess
- *
- * @apiSuccessExample {json} Success-Response:
- *    HTTP/1.1 200 OK
- *
- */
-
-/**
- * @apiDefine AuthHeader
- *
- * @apiHeader (Authorization) {String} Authorization oAuth access token in the format "Bearer {token}"
- * @apiHeader (Authorization) {String} Refresh-Token oAuth refresh token in the format "Bearer {token}"
- *
- * @apiHeaderExample {text} Header-Example:
- *    Authorization: Bearer asdfds18472569asdpiowq985674126
- *    Refresh-Token: Bearer rgd1589647832pjtvountzq4y713g21
- */
-
-/**
- * @apiDefine ApiKeyAuthHeader
- *
- * @apiHeader (Authorization) {String} Authorization oAuth access key in the format "Bearer {apiKey}"
- *
- * @apiHeaderExample {text} Header-Example:
- *    Authorization: Bearer tsLuthUh50tnaHuVWU52VQz7GD1ZksReEpgfRePwNSTtqYjF0CThNM3Ncq9TFcV5Giy1sjny8eWn2oVM7U7607m9st8gzfKuHSiPspYMRvhg2cQYsO5hJ3pDedtoVcYF
- */
-
 /* ------------------------------ COMMON PARAMETER OBJECTS -------------------------------------- */
-
 
 /**
  * @apiDefine UserParams
@@ -76,7 +56,7 @@
  * @apiParam (Body) {Object[]} projects Array of projects on which the user have worked.
  * @apiParam (Body) {String{1..128}} project.title Title of the project.
  * @apiParam (Body) {String{1..1024}} project.description Description of the project.
- * @apiParam (Body) {[String{1..32}]} project.technologies Technologies user for building the project.
+ * @apiParam (Body) {[String]} project.technologies Technologies used for building the project.
  * @apiParam (Body) {String{1..128}} project.image Path to project image.
  * @apiParam (Body) {String{1..1024}} project.webLink HTTP link to production content.
  * @apiParam (Body) {String{1..1024}} project.githubLink HTTP link to code in github.

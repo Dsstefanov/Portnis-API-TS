@@ -74,13 +74,15 @@ export class UserCtrl {
     const fname = 'UserCtrl.getUserById';
     return new Promise((async (resolve, reject) => {
       try {
-        const user = await dbService.findOneNotNull('User', {_id: req.initialUser.userId}, true, null, null,
-            /*'skills projects contact socialMedias'*/
+        const user: any = await dbService.findOneNotNull<IUser>('User', {_id: req.initialUser.userId}, true, null, null,
             [
-              {path: 'projects', model: 'Project'},
+              {path: 'projects', model: 'Project',
+                populate: {path: 'image', model: 'File'}},
               {path: 'contact', model: 'Contact'},
               {path: 'socialMedias', model: 'SocialMedias'},
+              {path: 'profileImage', model: 'File'},
             ]);
+        user.email = req.initialUser.email;
         return resolve(user);
       } catch (err) {
         return reject(ErrorHandler.handleErrDb(fname, err));
@@ -99,6 +101,7 @@ export class UserCtrl {
                 populate: {path: 'image', model: 'File'}},
               {path: 'contact', model: 'Contact'},
               {path: 'socialMedias', model: 'SocialMedias'},
+              {path: 'profileImage', model: 'File'},
             ]
             /*'skills projects contact socialMedias' TODO uncomment when all models are registered*/);
         const initialUser = await dbService.findOneNotNull<IInitialUser>('InitialUser', {userId: user._id}, true, 'email');

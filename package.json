@@ -1,11 +1,10 @@
 {
-  "name": "portnis-api-v2",
+  "name": "Portnis-API-v2",
   "version": "2.0.0",
   "scripts": {
     "prestart": "tsc",
     "start": "node dist/server.js --local",
-    "docs": "apidoc -i app -o doc",
-    "ext-docs": "apidoc -i app -o ext-doc -f \"_apidoc\\.js\" -f \"ExternalResources\\.ts\""
+    "docs": "apidoc -i app -o doc"
   },
   "dependencies": {
     "bcrypt-nodejs": "0.0.3",

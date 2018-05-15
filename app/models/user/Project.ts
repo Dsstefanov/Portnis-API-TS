@@ -6,11 +6,11 @@ import {IFile} from "../file/File";
 
 export class Project {
   title: string;
-  description: string;
-  technologies: string[];
+  description?: string;
+  technologies?: string[];
   image?: Schema.Types.ObjectId | IFile;
   weblink?: string;
-  githubLink: string;
+  githubLink?: string;
   buildingReason?: string;
 }
 
